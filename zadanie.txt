@@ -1,0 +1,112 @@
+Zadanie 4: Webová aplikácia „Správca úloh pre študentov“
+
+Cieľ projektu
+
+Vytvorte webovú aplikáciu na správu osobných a skupinových úloh pre študentov.
+
+Backend musí byť vytvorený v Django.
+Frontend je ľubovoľný.
+
+Aplikácia musí byť na konci projektu nasadená online na free platforme.
+
+Opis aplikácie
+
+Používatelia si budú môcť:
+
+- vytvárať osobné úlohy
+- vytvárať skupiny
+- zdieľať úlohy v skupine
+- sledovať termíny a stav úloh
+- filtrovať úlohy podľa predmetu, priority alebo termínu
+
+Povinné modely
+
+1. Task
+- názov
+- popis
+- termín
+- priorita
+- stav
+
+2. Group
+- názov
+- popis
+- dátum vytvorenia
+
+3. Category
+- názov kategórie
+- farba alebo popis
+
+4. User
+- používateľ systému
+
+Povinný M:N vzťah
+
+Povinné riešenie:
+User ↔ Group
+
+Odporúčané riešenie cez model GroupMembership
+- používateľ
+- skupina
+- rola
+- dátum vstupu
+
+Voliteľne môžete pridať:
+Task ↔ User pre zdieľané úlohy
+
+Povinné funkcionality
+
+CRUD operácie
+
+Minimálne pre:
+- Task
+- Group
+- Category
+
+Práca s úlohami
+- vytvoriť osobnú úlohu
+- vytvoriť skupinovú úlohu
+- označiť úlohu ako splnenú
+- priradiť úlohu skupine alebo používateľovi
+
+Vyhľadávanie a filtrovanie
+- podľa kategórie
+- podľa termínu
+- podľa stavu
+- podľa priority
+
+Prihlásenie používateľa
+
+Minimálne 2 roly:
+- admin
+- používateľ
+
+API alebo frontend
+- Django templates + jednoduché API
+alebo
+- oddelený frontend + REST API
+
+Povinné nasadenie
+
+Projekt musí byť nasadený online na free platforme.
+
+Povinné odovzdanie
+- Git repozitár
+- odkaz na aplikáciu
+- README
+- stručná dokumentácia
+- prezentácia
+
+Spoločné požiadavky pre všetky zadania
+
+Každý projekt musí obsahovať:
+- backend v Django
+- databázové modely a migrácie
+- aspoň jeden vzťah M:N
+- CRUD operácie nad hlavnými entitami
+- autentifikáciu používateľa
+- minimálne 2 používateľské roly
+- filtrovanie alebo vyhľadávanie
+- Git repozitár
+- README
+- nasadenie na free platforme
