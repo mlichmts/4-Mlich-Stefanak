@@ -1,0 +1,18 @@
+<h1>Moje úlohy</h1>
+
+<a href="/tasks/create/">+ Pridať úlohu</a>
+
+<ul>
+    {% for task in tasks %}
+        <li>
+            {{ task.title }} | {{ task.status }} | {{ task.due_date }}
+        </li>
+    {% empty %}
+        <li>Žiadne úlohy</li>
+    {% endfor %}
+</ul>
+
+<form method="post" action="/logout/">
+    {% csrf_token %}
+    <button type="submit">Logout</button>
+</form>

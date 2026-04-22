@@ -1,0 +1,11 @@
+<h1>Pridať úlohu</h1>
+
+<form method="post">
+    {% csrf_token %}
+
+    <input name="title" placeholder="Názov"><br>
+    <textarea name="description"></textarea><br>
+    <input type="date" name="due_date"><br>
+
+    <button type="submit">Uložiť</button>
+</form>
