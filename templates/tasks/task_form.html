@@ -3,9 +3,39 @@
 <form method="post">
     {% csrf_token %}
 
-    <input name="title" placeholder="Názov"><br>
-    <textarea name="description"></textarea><br>
-    <input type="date" name="due_date"><br>
+    <!-- názov -->
+    <input name="title" placeholder="Názov úlohy" required><br><br>
+
+    <!-- popis -->
+    <textarea name="description" placeholder="Popis úlohy"></textarea><br><br>
+
+    <!-- termín -->
+    <label>Termín:</label>
+    <input type="date" name="due_date"><br><br>
+
+    <!-- priorita -->
+    <label>Priorita:</label>
+    <select name="priority">
+        <option value="low">Nízka</option>
+        <option value="medium">Stredná</option>
+        <option value="high">Vysoká</option>
+    </select><br><br>
+
+    <!-- stav -->
+    <label>Stav:</label>
+    <select name="status">
+        <option value="todo">Na začatie</option>
+        <option value="doing">Robí sa</option>
+        <option value="done">Hotovo</option>
+    </select><br><br>
+
+    <!-- kategória -->
+    <label>Kategória:</label>
+    <select name="category">
+        {% for category in categories %}
+            <option value="{{ category.id }}">{{ category.name }}</option>
+        {% endfor %}
+    </select><br><br>
 
     <button type="submit">Uložiť</button>
 </form>

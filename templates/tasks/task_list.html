@@ -5,7 +5,11 @@
 <ul>
     {% for task in tasks %}
         <li>
-            {{ task.title }} | {{ task.status }} | {{ task.due_date }}
+            <b>{{ task.title }}</b><br>
+            {{ task.description }}<br>
+            {{ task.due_date }}<br>
+            {{ task.priority }} | {{ task.status }}<br>
+            vytvoril: {{ task.user.username }}
         </li>
     {% empty %}
         <li>Žiadne úlohy</li>
