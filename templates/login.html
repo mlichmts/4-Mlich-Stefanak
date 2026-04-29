@@ -1,17 +1,121 @@
 <!DOCTYPE html>
-<html>
+<html lang="sk">
 <head>
-    <title>Login</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prihlásenie</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #1e1e1e;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .card {
+    background: #2a2a2a;
+    border-radius: 10px;
+    padding: 32px 28px 28px;
+    width: 230px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .card-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #e8e8e8;
+    margin-bottom: 6px;
+  }
+
+  form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .my-field-wrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  /* Labels hidden — placeholders carry the hint text */
+  .my-field-wrapper label { display: none; }
+
+  .my-field-wrapper input {
+    width: 100%;
+    background: #3a3a3a;
+    border: none;
+    border-radius: 6px;
+    padding: 9px 12px;
+    color: #ccc;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    outline: none;
+    transition: background 0.15s;
+  }
+  .my-field-wrapper input::placeholder { color: #777; }
+  .my-field-wrapper input:focus { background: #444; }
+
+  /* Django error list */
+  .my-field-wrapper ul.errorlist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .my-field-wrapper ul.errorlist li {
+    font-size: 11px;
+    color: #e05252;
+    padding-top: 2px;
+  }
+
+  .spacer { height: 20px; }
+
+  .btn-login {
+    background: #4da6ff;
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 24px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .btn-login:hover { background: #6db8ff; transform: translateY(-1px); }
+  .btn-login:active { transform: translateY(0); }
+</style>
 </head>
 <body>
-
-<h2>Prihlásenie</h2>
-
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Prihlásiť</button>
-</form>
-
+  <div class="card">
+    <div class="card-title">Prihlásenie</div>
+    <form method="post">
+      {% csrf_token %}
+      <div class="my-field-wrapper">
+        {{ form.username.label_tag }}
+        {{ form.username }}
+        {{ form.username.errors }}
+      </div>
+      <div class="my-field-wrapper">
+        {{ form.password.label_tag }}
+        {{ form.password }}
+        {{ form.password.errors }}
+      </div>
+      <div class="spacer"></div>
+      <button type="submit" class="btn-login">Prihlásiť</button>
+    </form>
+  </div>
 </body>
 </html>
