@@ -4,24 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registrácia</title>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --ink: #1a1a2e;
-            --ink-soft: #4a4a6a;
-            --paper: #f7f5f0;
-            --accent: #c8a96e;
-            --accent-dark: #a8893e;
-            --border: #ddd8cc;
-            --white: #ffffff;
-            --error: #c0392b;
+            --bg:         #1e1e1e;
+            --card-bg:    #2a2a2a;
+            --input-bg:   #3a3a3a;
+            --input-focus:#444;
+            --border:     #3a3a3a;
+            --text:       #e8e8e8;
+            --text-dim:   #ccc;
+            --text-muted: #777;
+            --accent:     #4da6ff;
+            --accent-hover:#6db8ff;
+            --error:      #e05252;
+            --divider:    #383838;
         }
 
         body {
             font-family: 'DM Sans', sans-serif;
-            background-color: var(--paper);
+            background: var(--bg);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -29,46 +33,29 @@
             padding: 2rem 1rem;
         }
 
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background:
-                radial-gradient(ellipse 600px 400px at 10% 20%, rgba(200, 169, 110, 0.08) 0%, transparent 70%),
-                radial-gradient(ellipse 500px 500px at 90% 80%, rgba(26, 26, 46, 0.04) 0%, transparent 70%);
-            pointer-events: none;
-        }
-
         .card {
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: 2px;
+            background: var(--card-bg);
+            border-radius: 10px;
             width: 100%;
-            max-width: 460px;
-            padding: 3rem 3rem 2.5rem;
-            position: relative;
-            box-shadow: 0 2px 40px rgba(26, 26, 46, 0.06), 0 1px 4px rgba(26, 26, 46, 0.04);
+            max-width: 440px;
+            padding: 32px 28px 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
         }
 
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, var(--accent) 0%, var(--accent-dark) 100%);
-        }
-
+        /* ── Brand ── */
         .brand {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 2rem;
+            margin-bottom: 20px;
         }
 
         .brand-icon {
-            width: 32px;
-            height: 32px;
-            background: var(--ink);
+            width: 28px;
+            height: 28px;
+            background: var(--accent);
             border-radius: 6px;
             display: flex;
             align-items: center;
@@ -76,168 +63,183 @@
         }
 
         .brand-icon svg {
-            width: 16px;
-            height: 16px;
-            fill: var(--accent);
+            width: 14px;
+            height: 14px;
+            fill: #fff;
         }
 
         .brand-name {
-            font-family: 'DM Serif Display', serif;
-            font-size: 1rem;
-            color: var(--ink);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
             letter-spacing: 0.02em;
         }
 
+        /* ── Heading ── */
         h1 {
-            font-family: 'DM Serif Display', serif;
-            font-size: 1.75rem;
-            color: var(--ink);
-            font-weight: 400;
-            margin-bottom: 0.35rem;
-            line-height: 1.2;
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 4px;
         }
 
         .subtitle {
-            font-size: 0.875rem;
-            color: var(--ink-soft);
-            font-weight: 300;
-            margin-bottom: 2rem;
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 400;
+            margin-bottom: 24px;
+        }
+
+        /* ── Form layout ── */
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 1rem;
+            gap: 12px;
         }
 
         .field {
-            margin-bottom: 1.1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
         }
 
-        .field.full { grid-column: 1 / -1; }
-
+        /* ── Labels ── */
         label {
-            display: block;
-            font-size: 0.75rem;
-            font-weight: 500;
-            color: var(--ink-soft);
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 0.08em;
-            margin-bottom: 0.4rem;
+            letter-spacing: 0.07em;
         }
 
+        /* ── Inputs ── */
         input[type="text"],
         input[type="email"],
         input[type="password"] {
             width: 100%;
-            padding: 0.7rem 0.875rem;
-            border: 1px solid var(--border);
-            border-radius: 2px;
+            background: var(--input-bg);
+            border: none;
+            border-radius: 6px;
+            padding: 9px 12px;
+            color: var(--text-dim);
             font-family: 'DM Sans', sans-serif;
-            font-size: 0.9rem;
-            color: var(--ink);
-            background: var(--white);
-            transition: border-color 0.2s, box-shadow 0.2s;
+            font-size: 12px;
             outline: none;
+            transition: background 0.15s, box-shadow 0.15s;
             -webkit-appearance: none;
         }
 
         input:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(200, 169, 110, 0.12);
+            background: var(--input-focus);
+            box-shadow: 0 0 0 2px rgba(77, 166, 255, 0.25);
         }
 
+        input::placeholder { color: var(--text-muted); }
+
+        /* ── Help text ── */
         .helptext {
-            font-size: 0.72rem;
-            color: var(--ink-soft);
-            margin-top: 0.35rem;
+            font-size: 10px;
+            color: var(--text-muted);
             line-height: 1.5;
-            opacity: 0.8;
         }
 
+        /* ── Error list ── */
         .errorlist {
             list-style: none;
-            margin-top: 0.35rem;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
         }
 
         .errorlist li {
-            font-size: 0.78rem;
+            font-size: 11px;
             color: var(--error);
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 4px;
         }
 
         .errorlist li::before {
             content: '×';
             font-weight: 700;
-            font-size: 0.9rem;
+            font-size: 13px;
+            line-height: 1;
         }
 
-        .divider {
-            height: 1px;
-            background: var(--border);
-            margin: 1.5rem 0;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 0.85rem;
-            background: var(--ink);
-            color: var(--white);
-            border: none;
-            border-radius: 2px;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 0.875rem;
-            font-weight: 500;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
-        }
-
-        .btn:hover { background: #2d2d4e; }
-        .btn:active { transform: translateY(1px); }
-
-        .login-link {
-            text-align: center;
-            margin-top: 1.5rem;
-            font-size: 0.85rem;
-            color: var(--ink-soft);
-        }
-
-        .login-link a {
-            color: var(--accent-dark);
-            text-decoration: none;
-            font-weight: 500;
-            border-bottom: 1px solid rgba(168, 137, 62, 0.3);
-            padding-bottom: 1px;
-            transition: border-color 0.2s;
-        }
-
-        .login-link a:hover { border-color: var(--accent-dark); }
-
-        /* Password hints list override */
-        ul {
-            padding-left: 0;
+        /* Password hint list (Django's ul inside help_text) */
+        .helptext ul,
+        p.helptext + ul {
             list-style: none;
-            margin-top: 0.3rem;
+            padding: 0;
+            margin: 0;
         }
 
-        ul li {
-            font-size: 0.72rem;
-            color: var(--ink-soft);
+        .helptext ul li,
+        p.helptext + ul li {
+            font-size: 10px;
+            color: var(--text-muted);
             padding: 1px 0;
-            opacity: 0.75;
         }
 
-        ul li::before {
+        .helptext ul li::before,
+        p.helptext + ul li::before {
             content: '— ';
             color: var(--accent);
         }
 
+        /* ── Divider ── */
+        .divider {
+            height: 1px;
+            background: var(--divider);
+            margin: 4px 0;
+        }
+
+        /* ── Submit button ── */
+        .btn {
+            width: 100%;
+            padding: 10px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 20px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.1s;
+        }
+
+        .btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
+        .btn:active { transform: translateY(0); }
+
+        /* ── Login link ── */
+        .login-link {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .login-link a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.15s;
+        }
+
+        .login-link a:hover { color: var(--accent-hover); }
+
         @media (max-width: 480px) {
-            .card { padding: 2rem 1.5rem; }
+            .card { padding: 24px 18px; }
             .form-row { grid-template-columns: 1fr; }
         }
     </style>
@@ -300,7 +302,7 @@
         </div>
 
         {% if form.non_field_errors %}
-            <ul class="errorlist" style="margin-bottom:1rem">
+            <ul class="errorlist" style="margin-bottom:4px">
                 {% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}
             </ul>
         {% endif %}
@@ -311,6 +313,7 @@
     </form>
 
     <p class="login-link">Už máš účet? <a href="{% url 'login' %}">Prihlásiť sa</a></p>
+    
 </div>
 
 </body>
