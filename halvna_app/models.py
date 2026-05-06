@@ -56,15 +56,15 @@ class GroupMembership(models.Model):
 class Task(models.Model):
 
     PRIORITY_CHOICES = [
-        ('low', 'Low'),
-        ('medium', 'Medium'),
-        ('high', 'High'),
+        ('nízka', 'Nízka'),
+        ('stredná', 'Stredná'),
+        ('vysoká', 'Vysoká'),
     ]
 
     STATUS_CHOICES = [
-        ('todo', 'To do'),
+        ('spraviť', 'Spraviť '),
         ('in_progress', 'In progress'),
-        ('done', 'Done'),
+        ('hotová', 'Hotová'),
     ]
 
     title = models.CharField(max_length=200)
@@ -74,13 +74,13 @@ class Task(models.Model):
     priority = models.CharField(
         max_length=10,
         choices=PRIORITY_CHOICES,
-        default='medium'
+        default='stredná'
     )
 
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
-        default='todo'
+        default='spraviť'
     )
 
     user = models.ForeignKey(

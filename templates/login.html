@@ -94,6 +94,16 @@
     cursor: pointer;
     transition: background 0.15s, transform 0.1s;
   }
+
+  .register{
+    color: white;
+    font-size: 12px;
+  }
+
+  .register a{
+    color: #4da6ff
+  }
+
   .btn-login:hover { background: #6db8ff; transform: translateY(-1px); }
   .btn-login:active { transform: translateY(0); }
 </style>
@@ -115,7 +125,7 @@
       </div>
       <div class="spacer"></div>
       <button type="submit" class="btn-login">Prihlásiť</button>
-      <p>Nemáš účet? <a href="{% url 'register' %}">Zaregistruj sa</a></p>
+      <p class="register">Nemáš účet? <a href="{% url 'register' %}">Zaregistruj sa</a></p>
     </form>
   </div>
 </body>

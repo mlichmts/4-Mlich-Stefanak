@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head><title>Nová skupina</title></head>
+<body>
+
+<h2>Vytvoriť skupinu</h2>
+
+<form method="post">
+    {% csrf_token %}
+
+    <label>Názov skupiny:</label><br>
+    <input type="text" name="name" required><br><br>
+
+    <label>Popis (voliteľné):</label><br>
+    <textarea name="description"></textarea><br><br>
+
+    <label>Vyber členov:</label><br>
+    {% for user in all_users %}
+        <label>
+            <input type="checkbox" name="members" value="{{ user.id }}">
+            {{ user.username }}
+            {% if user.first_name %} ({{ user.first_name }} {{ user.last_name }}){% endif %}
+        </label><br>
+    {% endfor %}
+
+    <br>
+    <button type="submit">Vytvoriť skupinu</button>
+    <a href="{% url 'task_list' %}">Zrušiť</a>
+</form>
+
+</body>
+</html>
