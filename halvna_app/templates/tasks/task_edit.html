@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head><title>Upraviť úlohu</title></head>
+<body>
+
+<h2>Upraviť úlohu</h2>
+
+<form method="post">
+    {% csrf_token %}
+
+    <input name="title" value="{{ task.title }}" required><br><br>
+
+    <textarea name="description">{{ task.description }}</textarea><br><br>
+
+    <label>Termín:</label>
+    <input type="date" name="due_date" value="{{ task.due_date }}"><br><br>
+
+    <label>Priorita:</label>
+    <select name="priority">
+        <option value="nízka" {% if task.priority == 'nízka' %}selected{% endif %}>Nízka</option>
+        <option value="stredná" {% if task.priority == 'stredná' %}selected{% endif %}>Stredná</option>
+        <option value="vysoká" {% if task.priority == 'vysoká' %}selected{% endif %}>Vysoká</option>
+    </select><br><br>
+
+    <label>Stav:</label>
+    <select name="status">
+        <option value="spraviť" {% if task.status == 'spraviť' %}selected{% endif %}>Spraviť</option>
+        <option value="in_progress" {% if task.status == 'in_progress' %}selected{% endif %}>In progress</option>
+        <option value="hotová" {% if task.status == 'hotová' %}selected{% endif %}>Hotová</option>
+    </select><br><br>
+
+    <label>Kategória:</label>
+    <select name="category">
+        <option value="">— žiadna —</option>
+        {% for category in categories %}
+            <option value="{{ category.id }}" {% if task.category_id == category.id %}selected{% endif %}>
+                {{ category.name }}
+            </option>
+        {% endfor %}
+    </select><br><br>
+
+    <label>Skupina:</label>
+    <select name="group">
+        <option value="">— osobná úloha —</option>
+        {% for group in groups %}
+            <option value="{{ group.id }}" {% if task.group_id == group.id %}selected{% endif %}>
+                {{ group.name }}
+            </option>
+        {% endfor %}
+    </select><br><br>
+
+    <button type="submit">Uložiť zmeny</button>
+    <a href="{% url 'task_list' %}">Zrušiť</a>
+</form>
+
+</body>
+</html>

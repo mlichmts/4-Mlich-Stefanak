@@ -20,7 +20,6 @@
             --priority-high:   #e05252;
             --priority-medium: #e8c84a;
             --priority-low:    #52c97a;
-            --checkbox-checked: #4da6ff;
         }
 
         body {
@@ -31,10 +30,8 @@
             padding: 32px;
         }
 
-        /* hide original elements — JS will read their data */
         h1, ul, body > form { display: none; }
 
-        /* ── TOP BAR ── */
         #topbar {
             display: flex;
             align-items: center;
@@ -54,7 +51,7 @@
             gap: 12px;
         }
 
-        #btn-add {
+        .btn-top {
             display: flex;
             align-items: center;
             gap: 7px;
@@ -68,7 +65,7 @@
             letter-spacing: 0.02em;
             transition: background 0.18s, transform 0.12s;
         }
-        #btn-add:hover { background: var(--accent-hover); transform: translateY(-1px); }
+        .btn-top:hover { background: var(--accent-hover); transform: translateY(-1px); }
 
         #btn-logout {
             background: none;
@@ -83,14 +80,12 @@
         }
         #btn-logout:hover { background: var(--card-border); color: var(--text-dim); }
 
-        /* ── BOARD ── */
         #board {
             display: flex;
             flex-wrap: wrap;
             gap: 20px;
         }
 
-        /* ── TASK CARD ── */
         .task-card {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
@@ -142,9 +137,9 @@
             border-radius: 50%;
             flex-shrink: 0;
         }
-        .dot.high   { background: var(--priority-high); }
-        .dot.medium { background: var(--priority-medium); }
-        .dot.low    { background: var(--priority-low); }
+        .dot.vysoká { background: var(--priority-high); }
+        .dot.stredná { background: var(--priority-medium); }
+        .dot.nízka  { background: var(--priority-low); }
 
         .card-status-title {
             font-size: 12px;
@@ -161,7 +156,6 @@
             background: #1e1e1e;
             border-radius: 4px;
             width: fit-content;
-            text-transform: capitalize;
         }
 
         .card-user {
@@ -172,7 +166,41 @@
             margin-top: 2px;
         }
 
-        /* ── Empty state ── */
+        .card-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 2px;
+        }
+
+        .btn-edit {
+            flex: 1;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--accent);
+            text-decoration: none;
+            padding: 5px 0;
+            border: 1px solid var(--accent);
+            border-radius: 6px;
+            transition: background 0.15s;
+        }
+        .btn-edit:hover { background: rgba(77,166,255,0.12); }
+
+        .btn-delete {
+            flex: 1;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--priority-high);
+            text-decoration: none;
+            padding: 5px 0;
+            border: 1px solid var(--priority-high);
+            border-radius: 6px;
+            transition: background 0.15s;
+            cursor: pointer;
+        }
+        .btn-delete:hover { background: rgba(224,82,82,0.12); }
+
         .empty-state {
             color: var(--text-muted);
             font-size: 14px;
@@ -181,14 +209,12 @@
 </head>
 <body>
 
-<!-- ── ORIGINAL DJANGO TEMPLATE (untouched) ── -->
+<!-- DJANGO DATA (skryté) -->
 <h1>Moje úlohy</h1>
-
-
 
 <ul>
     {% for task in tasks %}
-        <li>
+        <li data-id="{{ task.id }}">
             <b>{{ task.title }}</b><br>
             {{ task.description }}<br>
             {{ task.due_date }}<br>
@@ -204,14 +230,13 @@
     {% csrf_token %}
     <button type="submit">Logout</button>
 </form>
-<!-- ── END ORIGINAL ── -->
 
-<!-- ── VISUAL SHELL ── -->
+<!-- VISUAL SHELL -->
 <div id="topbar">
     <span class="page-title" id="pageTitle"></span>
     <div class="right">
-        <a id="btn-add" href="/tasks/create/">+ ADD TASK</a>
-        <a id="btn-add" href="{% url 'group_create' %}">+ Nová skupina</a>
+        <a class="btn-top" href="/tasks/create/">+ Add Task</a>
+        <a class="btn-top" href="{% url 'group_create' %}" style="background:#3a3a3a; color:var(--text-dim);">+ Nová skupina</a>
         <form method="post" action="/logout/" style="display:inline">
             {% csrf_token %}
             <button type="submit" id="btn-logout">Logout</button>
@@ -222,24 +247,21 @@
 <div id="board"></div>
 
 <script>
-    // ── Pull page title from h1 ──
     document.getElementById('pageTitle').textContent =
         document.querySelector('h1').textContent;
 
-    // ── Parse each <li> and build a card ──
     const items = document.querySelectorAll('ul li');
     const board = document.getElementById('board');
 
     if (items.length === 1 && !items[0].querySelector('b')) {
-        // empty state
         const el = document.createElement('div');
         el.className = 'empty-state';
         el.textContent = items[0].textContent.trim();
         board.appendChild(el);
     } else {
         items.forEach(li => {
-            // Each li has text nodes and <br> elements between them.
-            // Collect text segments split by <br>
+            const taskId = li.dataset.id;
+
             const segments = [];
             let current = '';
             li.childNodes.forEach(node => {
@@ -251,7 +273,6 @@
                 }
             });
             if (current.trim()) segments.push(current.trim());
-            // segments: [title, description, due_date, "priority | status", "vytvoril: username"]
 
             const title       = segments[0] || '';
             const description = segments[1] || '';
@@ -262,22 +283,24 @@
             const [priority, status] = priStat.split('|').map(s => s.trim());
             const username = userLine.replace('vytvoril:', '').trim();
 
-            const priorityLabel = { high: 'Vysoká', medium: 'Stredná', low: 'Nízka' }[priority] || priority;
-            const statusLabel   = { todo: 'Na začatie', doing: 'Robí sa', done: 'Hotovo' }[status] || status;
-
             const card = document.createElement('div');
             card.className = 'task-card';
             card.innerHTML = `
                 <div class="card-title">${title}</div>
                 <div class="card-subject">${description}</div>
-                <div class="card-due">Due to: <span>${dueDate || 'x.x.202x'}</span></div>
+                <div class="card-due">Due: <span>${dueDate || '—'}</span></div>
                 <div class="card-priority">
                     <div class="dot ${priority}"></div>
-                    Priority: ${priorityLabel}
+                    ${priority}
                 </div>
                 <div class="card-status-title">Status</div>
-                <div class="card-status-value">${statusLabel}</div>
-                <div class="card-user">${username}</div>
+                <div class="card-status-value">${status}</div>
+                <div class="card-user">👤 ${username}</div>
+                <div class="card-actions">
+                    <a class="btn-edit" href="/tasks/${taskId}/edit/">✏ Upraviť</a>
+                    <a class="btn-delete" href="/tasks/${taskId}/delete/"
+                       onclick="return confirm('Zmazať úlohu?')">🗑 Zmazať</a>
+                </div>
             `;
             board.appendChild(card);
         });
@@ -286,4 +309,3 @@
 
 </body>
 </html>
-

@@ -42,6 +42,41 @@ def task_create(request):
 
 
 @login_required
+def task_edit(request, task_id):
+    task = Task.objects.get(id=task_id)
+    categories = Category.objects.all()
+    user_groups = request.user.student_groups.all()
+
+    if request.method == 'POST':
+        task.title = request.POST['title']
+        task.description = request.POST.get('description')
+        
+        due_date = request.POST.get('due_date')
+        if due_date:  # ak je vyplnený, zmeň ho, inak ponechaj pôvodný
+            task.due_date = due_date
+            
+        task.priority = request.POST.get('priority')
+        task.status = request.POST.get('status')
+        task.category_id = request.POST.get('category') or None
+        task.group_id = request.POST.get('group') or None
+        task.save()
+        return redirect('task_list')
+
+    return render(request, 'tasks/task_edit.html', {
+        'task': task,
+        'categories': categories,
+        'groups': user_groups,
+    })
+
+
+@login_required
+def task_delete(request, task_id):
+    task = Task.objects.get(id=task_id)
+    task.delete()
+    return redirect('task_list')
+
+
+@login_required
 def group_list(request):
     all_groups = Group.objects.all()
     my_groups = request.user.student_groups.all()
@@ -87,7 +122,7 @@ def group_create(request):
             user = User.objects.get(id=user_id)
             GroupMembership.objects.create(user=user, group=group, role='member')
 
-        
+        return redirect('task_list')
 
     return render(request, 'tasks/group_create.html', {
         'all_users': all_users,
