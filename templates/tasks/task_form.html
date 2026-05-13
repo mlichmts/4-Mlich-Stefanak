@@ -270,9 +270,9 @@
             border-radius: 50%;
             flex-shrink: 0;
         }
-        .dot.high   { background: var(--priority-high); }
-        .dot.medium { background: var(--priority-medium); }
-        .dot.low    { background: var(--priority-low); }
+        .dot.vysoká { background: var(--priority-high); }
+        .dot.stredná { background: var(--priority-medium); }
+        .dot.nízka  { background: var(--priority-low); }
 
         /* hidden priority input */
         input[name="priority"] { display: none; }
@@ -357,9 +357,9 @@
             <div class="field-inline">
                 <label>Stav</label>
                 <select name="status">
-                    <option value="todo">Na začatie</option>
+                    <option value="spraviť">Spraviť</option>
                     <option value="in_progress">Robí sa</option>
-                    <option value="done">Hotovo</option>
+                    <option value="hotová">Hotová</option>
                 </select>
             </div>
             <div class="field-inline">
@@ -389,23 +389,21 @@
     <!-- ── RIGHT ── -->
     <div class="modal-right">
 
-        <div class="priority-title">Set priority:</div>
+        <div class="priority-title">Nastav prioritu:</div>
 
-        <!-- hidden real priority field -->
-        <input type="hidden" name="priority" id="priorityValue" value="high">
+        <input type="hidden" name="priority" id="priorityValue" value="vysoká">
 
         <div class="priority-options">
-            <div class="priority-opt active" data-p="high">
-                <div class="dot high"></div> High
+            <div class="priority-opt {% if task.priority == 'vysoká' %}active{% endif %}" data-p="vysoká">
+                <div class="dot vysoká"></div> Vysoká
             </div>
-            <div class="priority-opt" data-p="medium">
-                <div class="dot medium"></div> Medium
+            <div class="priority-opt {% if task.priority == 'stredná' %}active{% endif %}" data-p="stredná">
+                <div class="dot stredná"></div> Stredná
             </div>
-            <div class="priority-opt" data-p="low">
-                <div class="dot low"></div> Low
+            <div class="priority-opt {% if task.priority == 'nízka' %}active{% endif %}" data-p="nízka">
+                <div class="dot nízka"></div> Nízka
             </div>
         </div>
-
         <div class="modal-actions">
             <button type="submit">Save</button>
             <a href="#" class="btn-cancel" onclick="history.back(); return false;">Cancel</a>
