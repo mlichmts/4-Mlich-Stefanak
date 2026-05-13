@@ -358,7 +358,7 @@
                 <label>Stav</label>
                 <select name="status">
                     <option value="todo">Na začatie</option>
-                    <option value="doing">Robí sa</option>
+                    <option value="in_progress">Robí sa</option>
                     <option value="done">Hotovo</option>
                 </select>
             </div>
@@ -373,11 +373,17 @@
         </div>
 
         <!-- subtask placeholder row (visual only) -->
-        <div class="subtask-row">
-            <input name="subtask_placeholder" placeholder="Add Task..." autocomplete="off">
-            <span style="color:var(--text-muted);font-size:18px;cursor:default;padding-left:8px">+</span>
+        <div class="selects-row">
+            <div class="field-inline">
+                <label>Skupina</label>
+                <select name="group">
+                    <option value="">— osobná úloha —</option>
+                    {% for group in groups %}
+                        <option value="{{ group.id }}">{{ group.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
         </div>
-
     </div>
 
     <!-- ── RIGHT ── -->

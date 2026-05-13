@@ -1,57 +1,464 @@
 <!DOCTYPE html>
-<html>
-<head><title>Upraviť úlohu</title></head>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upraviť úlohu</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:          #1e1e1e;
+            --card-bg:     #2a2a2a;
+            --input-bg:    #333;
+            --input-focus: #3d3d3d;
+            --border:      #3a3a3a;
+            --text:        #e8e8e8;
+            --text-dim:    #ccc;
+            --text-muted:  #777;
+            --accent:      #4da6ff;
+            --accent-hover:#6db8ff;
+            --cal-today:   #e05252;
+            --priority-high:   #e05252;
+            --priority-medium: #e8c84a;
+            --priority-low:    #52c97a;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        br { display: none; }
+
+        .modal {
+            background: var(--card-bg);
+            border-radius: 14px;
+            display: flex;
+            overflow: hidden;
+            width: 100%;
+            max-width: 660px;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+        }
+
+        .modal-left {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border);
+            min-width: 0;
+        }
+
+        input[name="title"] {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid var(--border);
+            padding: 18px 20px;
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            font-weight: 500;
+            outline: none;
+            width: 100%;
+        }
+        input[name="title"]::placeholder { color: var(--text-muted); }
+
+        textarea[name="description"] {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid var(--border);
+            padding: 14px 20px;
+            color: var(--text-dim);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            outline: none;
+            resize: none;
+            width: 100%;
+            min-height: 90px;
+        }
+
+        .calendar-wrap {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .cal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+        .cal-header span {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-dim);
+        }
+        .cal-nav {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 2px 8px;
+            border-radius: 4px;
+            line-height: 1;
+            transition: background 0.15s;
+        }
+        .cal-nav:hover { background: var(--border); }
+
+        .cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            text-align: center;
+        }
+        .cal-day-name {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            padding: 4px 0 8px;
+            letter-spacing: 0.05em;
+        }
+        .cal-day {
+            font-size: 12px;
+            color: var(--text-dim);
+            padding: 6px 0;
+            border-radius: 50%;
+            cursor: pointer;
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.12s;
+        }
+        .cal-day:hover { background: #444; }
+        .cal-day.today { background: var(--cal-today); color: #fff; font-weight: 700; }
+        .cal-day.selected:not(.today) { background: var(--accent); color: #fff; }
+        .cal-day.empty { cursor: default; pointer-events: none; }
+
+        input[type="date"] { display: none; }
+
+        .selects-row {
+            display: flex;
+            gap: 10px;
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .field-inline {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+        }
+
+        .field-inline label {
+            font-size: 9px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+        }
+
+        select {
+            width: 100%;
+            background: var(--input-bg);
+            border: none;
+            border-radius: 6px;
+            padding: 7px 28px 7px 10px;
+            color: var(--text-dim);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 12px;
+            outline: none;
+            cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23777' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            transition: background-color 0.15s, box-shadow 0.15s;
+        }
+        select:focus { background-color: var(--input-focus); box-shadow: 0 0 0 2px rgba(77,166,255,0.2); }
+        select option { background: var(--card-bg); color: var(--text-dim); }
+
+        .modal-right {
+            width: 150px;
+            flex-shrink: 0;
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .priority-title {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .priority-options { display: flex; flex-direction: column; gap: 6px; }
+
+        .priority-opt {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-dim);
+            cursor: pointer;
+            padding: 6px 8px;
+            border-radius: 6px;
+            border: 1.5px solid transparent;
+            transition: background 0.15s;
+            user-select: none;
+        }
+        .priority-opt:hover { background: var(--border); }
+        .priority-opt.active { border-color: var(--border); background: #333; }
+
+        .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        .dot.vysoká { background: var(--priority-high); }
+        .dot.stredná { background: var(--priority-medium); }
+        .dot.nízka   { background: var(--priority-low); }
+
+        input[name="priority"] { display: none; }
+
+        /* skupina sekcia */
+        .group-section {
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        .group-section label {
+            font-size: 9px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .modal-actions {
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            padding: 10px 0;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 20px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.1s;
+        }
+        button[type="submit"]:hover { background: var(--accent-hover); transform: translateY(-1px); }
+
+        .btn-cancel {
+            width: 100%;
+            padding: 10px 0;
+            background: none;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            display: block;
+            transition: background 0.15s;
+        }
+        .btn-cancel:hover { background: var(--border); }
+
+        @media (max-width: 520px) {
+            .modal { flex-direction: column; }
+            .modal-left { border-right: none; border-bottom: 1px solid var(--border); }
+            .modal-right { width: 100%; flex-direction: row; flex-wrap: wrap; }
+            .modal-actions { width: 100%; }
+        }
+    </style>
+</head>
 <body>
 
-<h2>Upraviť úlohu</h2>
-
-<form method="post">
+<div class="modal">
+    <form method="post" style="display:contents">
     {% csrf_token %}
 
-    <input name="title" value="{{ task.title }}" required><br><br>
+    <!-- LEFT -->
+    <div class="modal-left">
 
-    <textarea name="description">{{ task.description }}</textarea><br><br>
+        <input name="title" placeholder="Task name..." value="{{ task.title }}" required>
 
-    <label>Termín:</label>
-    <input type="date" name="due_date" value="{{ task.due_date }}"><br><br>
+        <textarea name="description" placeholder="Subject...">{{ task.description }}</textarea>
 
-    <label>Priorita:</label>
-    <select name="priority">
-        <option value="nízka" {% if task.priority == 'nízka' %}selected{% endif %}>Nízka</option>
-        <option value="stredná" {% if task.priority == 'stredná' %}selected{% endif %}>Stredná</option>
-        <option value="vysoká" {% if task.priority == 'vysoká' %}selected{% endif %}>Vysoká</option>
-    </select><br><br>
+        <input type="date" name="due_date" value="{{ task.due_date }}">
+        <div class="calendar-wrap">
+            <div class="cal-header">
+                <button class="cal-nav" type="button" id="prevMonth">&#8249;</button>
+                <span id="calMonthYear"></span>
+                <button class="cal-nav" type="button" id="nextMonth">&#8250;</button>
+            </div>
+            <div class="cal-grid" id="calGrid"></div>
+        </div>
 
-    <label>Stav:</label>
-    <select name="status">
-        <option value="spraviť" {% if task.status == 'spraviť' %}selected{% endif %}>Spraviť</option>
-        <option value="in_progress" {% if task.status == 'in_progress' %}selected{% endif %}>In progress</option>
-        <option value="hotová" {% if task.status == 'hotová' %}selected{% endif %}>Hotová</option>
-    </select><br><br>
+        <div class="selects-row">
+            <div class="field-inline">
+                <label>Stav</label>
+                <select name="status">
+                    <option value="spraviť"     {% if task.status == 'spraviť' %}selected{% endif %}>Spraviť</option>
+                    <option value="in_progress" {% if task.status == 'in_progress' %}selected{% endif %}>Robí sa</option>
+                    <option value="hotová"      {% if task.status == 'hotová' %}selected{% endif %}>Hotová</option>
+                </select>
+            </div>
+            <div class="field-inline">
+                <label>Kategória</label>
+                <select name="category">
+                    <option value="">— žiadna —</option>
+                    {% for category in categories %}
+                        <option value="{{ category.id }}" {% if task.category_id == category.id %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
 
-    <label>Kategória:</label>
-    <select name="category">
-        <option value="">— žiadna —</option>
-        {% for category in categories %}
-            <option value="{{ category.id }}" {% if task.category_id == category.id %}selected{% endif %}>
-                {{ category.name }}
-            </option>
-        {% endfor %}
-    </select><br><br>
+        <div class="group-section">
+            <label>Skupina</label>
+            <select name="group">
+                <option value="">— osobná úloha —</option>
+                {% for group in groups %}
+                    <option value="{{ group.id }}" {% if task.group_id == group.id %}selected{% endif %}>
+                        {{ group.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
 
-    <label>Skupina:</label>
-    <select name="group">
-        <option value="">— osobná úloha —</option>
-        {% for group in groups %}
-            <option value="{{ group.id }}" {% if task.group_id == group.id %}selected{% endif %}>
-                {{ group.name }}
-            </option>
-        {% endfor %}
-    </select><br><br>
+    </div>
 
-    <button type="submit">Uložiť zmeny</button>
-    <a href="{% url 'task_list' %}">Zrušiť</a>
-</form>
+    <!-- RIGHT -->
+    <div class="modal-right">
+
+        <div class="priority-title">Nastav prioritu:</div>
+
+        <input type="hidden" name="priority" id="priorityValue" value="{{ task.priority }}">
+
+        <div class="priority-options">
+            <div class="priority-opt {% if task.priority == 'vysoká' %}active{% endif %}" data-p="vysoká">
+                <div class="dot vysoká"></div> Vysoká
+            </div>
+            <div class="priority-opt {% if task.priority == 'stredná' %}active{% endif %}" data-p="stredná">
+                <div class="dot stredná"></div> Stredná
+            </div>
+            <div class="priority-opt {% if task.priority == 'nízka' %}active{% endif %}" data-p="nízka">
+                <div class="dot nízka"></div> Nízka
+            </div>
+        </div>
+
+        <div class="modal-actions">
+            <button type="submit">Uložiť</button>
+            <a href="{% url 'task_list' %}" class="btn-cancel">Zrušiť</a>
+        </div>
+
+    </div>
+
+    </form>
+</div>
+
+<script>
+    const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const DAYS   = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+
+    // Načítaj existujúci dátum z tasku
+    const existingDate = document.querySelector('input[name="due_date"]').value;
+    let calDate, selectedDay = null, selectedMonth = null, selectedYear = null;
+
+    if (existingDate) {
+        const parts = existingDate.split('-');
+        selectedYear  = parseInt(parts[0]);
+        selectedMonth = parseInt(parts[1]) - 1;
+        selectedDay   = parseInt(parts[2]);
+        calDate = new Date(selectedYear, selectedMonth, 1);
+    } else {
+        calDate = new Date();
+    }
+
+    function renderCalendar() {
+        const grid   = document.getElementById('calGrid');
+        const header = document.getElementById('calMonthYear');
+        const y = calDate.getFullYear(), m = calDate.getMonth();
+        const today = new Date();
+        const firstDay = new Date(y, m, 1).getDay();
+        const daysInMonth = new Date(y, m + 1, 0).getDate();
+
+        header.textContent = `${MONTHS[m]} ${y}`;
+        grid.innerHTML = '';
+
+        DAYS.forEach(d => {
+            const el = document.createElement('div');
+            el.className = 'cal-day-name';
+            el.textContent = d;
+            grid.appendChild(el);
+        });
+
+        for (let i = 0; i < firstDay; i++) {
+            const el = document.createElement('div');
+            el.className = 'cal-day empty';
+            grid.appendChild(el);
+        }
+
+        for (let d = 1; d <= daysInMonth; d++) {
+            const el = document.createElement('div');
+            el.className = 'cal-day';
+            el.textContent = d;
+            if (d === today.getDate() && m === today.getMonth() && y === today.getFullYear())
+                el.classList.add('today');
+            if (d === selectedDay && m === selectedMonth && y === selectedYear)
+                el.classList.add('selected');
+            el.addEventListener('click', () => {
+                selectedDay = d; selectedMonth = m; selectedYear = y;
+                const pad = n => String(n).padStart(2, '0');
+                document.querySelector('input[name="due_date"]').value =
+                    `${y}-${pad(m+1)}-${pad(d)}`;
+                renderCalendar();
+            });
+            grid.appendChild(el);
+        }
+    }
+
+    document.getElementById('prevMonth').addEventListener('click', () => {
+        calDate.setMonth(calDate.getMonth() - 1); renderCalendar();
+    });
+    document.getElementById('nextMonth').addEventListener('click', () => {
+        calDate.setMonth(calDate.getMonth() + 1); renderCalendar();
+    });
+
+    renderCalendar();
+
+    // Priority
+    document.querySelectorAll('.priority-opt').forEach(opt => {
+        opt.addEventListener('click', () => {
+            document.querySelectorAll('.priority-opt').forEach(o => o.classList.remove('active'));
+            opt.classList.add('active');
+            document.getElementById('priorityValue').value = opt.dataset.p;
+        });
+    });
+</script>
 
 </body>
 </html>

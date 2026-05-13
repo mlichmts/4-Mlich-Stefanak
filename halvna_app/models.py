@@ -63,7 +63,7 @@ class Task(models.Model):
 
     STATUS_CHOICES = [
         ('spraviť', 'Spraviť '),
-        ('in_progress', 'In progress'),
+        ('robí sa', 'Robí sa'),
         ('hotová', 'Hotová'),
     ]
 

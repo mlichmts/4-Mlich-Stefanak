@@ -4,6 +4,7 @@ from django.db.models import Q
 from django.contrib.auth.models import User
 from .models import Task, Category, Group, GroupMembership
 
+
 @login_required
 def task_list(request):
     if request.user.is_superuser:
@@ -14,7 +15,47 @@ def task_list(request):
             Q(user=request.user) | Q(group__in=user_groups)
         ).distinct()
 
-    return render(request, 'tasks/task_list.html', {'tasks': tasks})
+    # Filtrovanie
+    status   = request.GET.get('status')
+    priority = request.GET.get('priority')
+    category = request.GET.get('category')
+    due      = request.GET.get('due')
+    sort     = request.GET.get('sort', '')
+    
+    if sort == 'due_asc':
+        tasks = tasks.order_by('due_date')
+    elif sort == 'due_desc':
+        tasks = tasks.order_by('-due_date')
+        
+    if status:
+        tasks = tasks.filter(status=status)
+    if priority:
+        tasks = tasks.filter(priority=priority)
+    if category:
+        tasks = tasks.filter(category_id=category)
+    if due == 'today':
+        from django.utils import timezone
+        tasks = tasks.filter(due_date=timezone.now().date())
+    elif due == 'week':
+        from django.utils import timezone
+        import datetime
+        today = timezone.now().date()
+        tasks = tasks.filter(due_date__range=[today, today + datetime.timedelta(days=7)])
+    elif due == 'overdue':
+        from django.utils import timezone
+        tasks = tasks.filter(due_date__lt=timezone.now().date(), status__ne='hotová') if False else tasks.filter(due_date__lt=timezone.now().date()).exclude(status='hotová')
+
+    categories = Category.objects.all()
+
+    return render(request, 'tasks/task_list.html', {
+        'tasks': tasks,
+        'categories': categories,
+        'current_status': status or '',
+        'current_priority': priority or '',
+        'current_category': category or '',
+        'current_due': due or '',
+         'current_sort': sort,
+    })
 
 
 @login_required

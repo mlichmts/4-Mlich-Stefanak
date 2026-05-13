@@ -20,6 +20,8 @@
             --priority-high:   #e05252;
             --priority-medium: #e8c84a;
             --priority-low:    #52c97a;
+            --overdue:      #e05252;
+            --due-soon:     #e8c84a;
         }
 
         body {
@@ -30,26 +32,16 @@
             padding: 32px;
         }
 
-        h1, ul, body > form { display: none; }
+        h1, ul, body > form, #django-data { display: none; }
 
         #topbar {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 32px;
+            margin-bottom: 24px;
         }
-
-        #topbar .page-title {
-            font-size: 22px;
-            font-weight: 600;
-            color: var(--text);
-        }
-
-        #topbar .right {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+        #topbar .page-title { font-size: 22px; font-weight: 600; color: var(--text); }
+        #topbar .right { display: flex; align-items: center; gap: 12px; }
 
         .btn-top {
             display: flex;
@@ -80,11 +72,62 @@
         }
         #btn-logout:hover { background: var(--card-border); color: var(--text-dim); }
 
-        #board {
+        /* FILTER BAR */
+        #filterbar {
             display: flex;
+            gap: 10px;
+            margin-bottom: 28px;
             flex-wrap: wrap;
-            gap: 20px;
+            align-items: center;
         }
+
+        .filter-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .filter-select {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 7px 28px 7px 12px;
+            color: var(--text-dim);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 12px;
+            outline: none;
+            cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23777' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            transition: border-color 0.15s;
+        }
+        .filter-select:focus { border-color: var(--accent); }
+        .filter-select option { background: var(--card-bg); }
+        .filter-select.active { border-color: var(--accent); color: var(--accent); }
+
+        .btn-reset {
+            background: none;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 7px 14px;
+            color: var(--text-muted);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.15s;
+        }
+        .btn-reset:hover { background: var(--card-border); color: var(--text-dim); }
+
+        .filter-count { font-size: 12px; color: var(--text-muted); margin-left: auto; }
+
+        /* BOARD */
+        #board { display: flex; flex-wrap: wrap; gap: 20px; }
 
         .task-card {
             background: var(--card-bg);
@@ -96,121 +139,79 @@
             flex-direction: column;
             gap: 10px;
             transition: box-shadow 0.2s, transform 0.2s;
+            position: relative;
         }
-        .task-card:hover {
-            box-shadow: 0 6px 28px rgba(0,0,0,0.4);
-            transform: translateY(-2px);
-        }
+        .task-card:hover { box-shadow: 0 6px 28px rgba(0,0,0,0.4); transform: translateY(-2px); }
+        .task-card.overdue  { border-color: rgba(224,82,82,0.4); }
+        .task-card.due-soon { border-color: rgba(232,200,74,0.4); }
+        .task-card.done-card { opacity: 0.55; }
 
-        .card-title {
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--text);
-        }
-
-        .card-subject {
-            background: #1e1e1e;
-            border-radius: 6px;
-            min-height: 54px;
-            padding: 8px 10px;
-            font-size: 12px;
-            color: var(--text-dim);
-            font-family: 'DM Mono', monospace;
-        }
-
-        .card-due {
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-        .card-due span { color: var(--text-dim); }
-
-        .card-priority {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 12px;
-            color: var(--text-dim);
-        }
-
-        .dot {
-            width: 10px; height: 10px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-        .dot.vysoká { background: var(--priority-high); }
-        .dot.stredná { background: var(--priority-medium); }
-        .dot.nízka  { background: var(--priority-low); }
-
-        .card-status-title {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-muted);
+        .due-badge {
+            position: absolute;
+            top: 12px; right: 12px;
+            font-size: 9px;
+            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.07em;
+            padding: 2px 7px;
+            border-radius: 99px;
         }
+        .due-badge.overdue  { background: rgba(224,82,82,0.15);  color: var(--overdue); }
+        .due-badge.due-soon { background: rgba(232,200,74,0.15); color: var(--due-soon); }
+        .due-badge.done     { background: rgba(82,201,122,0.15); color: var(--priority-low); }
 
-        .card-status-value {
-            font-size: 11px;
-            color: var(--text-muted);
-            padding: 4px 8px;
-            background: #1e1e1e;
-            border-radius: 4px;
-            width: fit-content;
+        .card-title { font-size: 15px; font-weight: 600; color: var(--text); padding-right: 52px; }
+        .card-subject {
+            background: #1e1e1e; border-radius: 6px; min-height: 40px;
+            padding: 8px 10px; font-size: 12px; color: var(--text-dim); font-family: 'DM Mono', monospace;
         }
+        .card-due { font-size: 12px; color: var(--text-muted); }
+        .card-due span { color: var(--text-dim); }
+        .card-priority { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-dim); }
 
-        .card-user {
-            font-size: 11px;
-            color: var(--text-muted);
-            border-top: 1px solid var(--card-border);
-            padding-top: 8px;
-            margin-top: 2px;
-        }
+        .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        .dot.vysoká { background: var(--priority-high); }
+        .dot.stredná { background: var(--priority-medium); }
+        .dot.nízka   { background: var(--priority-low); }
 
-        .card-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 2px;
-        }
+        .card-meta { display: flex; gap: 6px; flex-wrap: wrap; }
+        .tag { font-size: 10px; padding: 2px 8px; border-radius: 99px; background: #1e1e1e; color: var(--text-muted); }
+        .tag.status-spraviť     { background: rgba(77,166,255,0.1);  color: var(--accent); }
+        .tag.status-in_progress { background: rgba(232,200,74,0.1);  color: var(--priority-medium); }
+        .tag.status-hotová      { background: rgba(82,201,122,0.1);  color: var(--priority-low); }
+
+        .card-user { font-size: 11px; color: var(--text-muted); border-top: 1px solid var(--card-border); padding-top: 8px; }
+        .card-actions { display: flex; gap: 8px; }
 
         .btn-edit {
-            flex: 1;
-            text-align: center;
-            font-size: 12px;
-            font-weight: 500;
-            color: var(--accent);
-            text-decoration: none;
-            padding: 5px 0;
-            border: 1px solid var(--accent);
-            border-radius: 6px;
-            transition: background 0.15s;
+            flex: 1; text-align: center; font-size: 12px; font-weight: 500;
+            color: var(--accent); text-decoration: none; padding: 5px 0;
+            border: 1px solid var(--accent); border-radius: 6px; transition: background 0.15s;
         }
         .btn-edit:hover { background: rgba(77,166,255,0.12); }
 
         .btn-delete {
-            flex: 1;
-            text-align: center;
-            font-size: 12px;
-            font-weight: 500;
-            color: var(--priority-high);
-            text-decoration: none;
-            padding: 5px 0;
-            border: 1px solid var(--priority-high);
-            border-radius: 6px;
-            transition: background 0.15s;
-            cursor: pointer;
+            flex: 1; text-align: center; font-size: 12px; font-weight: 500;
+            color: var(--priority-high); text-decoration: none; padding: 5px 0;
+            border: 1px solid var(--priority-high); border-radius: 6px; transition: background 0.15s; cursor: pointer;
         }
         .btn-delete:hover { background: rgba(224,82,82,0.12); }
 
-        .empty-state {
-            color: var(--text-muted);
-            font-size: 14px;
-        }
+        .empty-state { color: var(--text-muted); font-size: 14px; }
     </style>
 </head>
 <body>
 
-<!-- DJANGO DATA (skryté) -->
+<!-- DJANGO DATA -->
 <h1>Moje úlohy</h1>
+
+<div id="django-data"
+    data-status="{{ current_status }}"
+    data-priority="{{ current_priority }}"
+    data-category="{{ current_category }}"
+    data-due="{{ current_due }}"
+    data-sort="{{ current_sort }}">
+</div>
 
 <ul>
     {% for task in tasks %}
@@ -219,12 +220,20 @@
             {{ task.description }}<br>
             {{ task.due_date }}<br>
             {{ task.priority }} | {{ task.status }}<br>
-            vytvoril: {{ task.user.username }}
+            {{ task.category.name|default:"" }}<br>
+            vytvoril: {{ task.user.username|default:"" }}
         </li>
     {% empty %}
         <li>Žiadne úlohy</li>
     {% endfor %}
 </ul>
+
+<select id="cat-options" style="display:none">
+    <option value="">Všetky kategórie</option>
+    {% for cat in categories %}
+        <option value="{{ cat.id }}">{{ cat.name }}</option>
+    {% endfor %}
+</select>
 
 <form method="post" action="/logout/">
     {% csrf_token %}
@@ -244,58 +253,151 @@
     </div>
 </div>
 
+<!-- FILTER BAR -->
+<div id="filterbar">
+    <span class="filter-label">Filter:</span>
+
+    <select class="filter-select" id="f-status">
+        <option value="">Všetky stavy</option>
+        <option value="spraviť">Spraviť</option>
+        <option value="Robí sa">Robí sa</option>
+        <option value="hotová">Hotová</option>
+    </select>
+
+    <select class="filter-select" id="f-priority">
+        <option value="">Všetky priority</option>
+        <option value="vysoká">Vysoká</option>
+        <option value="stredná">Stredná</option>
+        <option value="nízka">Nízka</option>
+    </select>
+
+    <select class="filter-select" id="f-category"></select>
+
+    <select class="filter-select" id="f-due">
+        <option value="">Všetky termíny</option>
+        <option value="overdue">Po termíne</option>
+        <option value="today">Dnes</option>
+        <option value="week">Tento týždeň</option>
+    </select>
+
+    <select class="filter-select" id="f-sort">
+        <option value="">Zoradiť podľa termínu</option>
+        <option value="due_asc">↑ Najbližší termín</option>
+        <option value="due_desc">↓ Najneskorší termín</option>
+    </select>
+
+    <a href="/" class="btn-reset">✕ Reset</a>
+    <span class="filter-count" id="filterCount"></span>
+</div>
+
 <div id="board"></div>
 
 <script>
     document.getElementById('pageTitle').textContent =
         document.querySelector('h1').textContent;
 
+    // Copy category options from hidden select
+    const catSrc = document.getElementById('cat-options');
+    const catDst = document.getElementById('f-category');
+    catSrc.querySelectorAll('option').forEach(o => catDst.appendChild(o.cloneNode(true)));
+    
+
+    // Restore active filters from Django context
+    const dd = document.getElementById('django-data').dataset;
+    document.getElementById('f-status').value   = dd.status;
+    document.getElementById('f-priority').value = dd.priority;
+    document.getElementById('f-category').value = dd.category;
+    document.getElementById('f-due').value      = dd.due;
+    document.getElementById('f-sort').value = dd.sort || '';
+
+    ['f-status','f-priority','f-category','f-due','f-sort'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el.value) el.classList.add('active');
+        el.addEventListener('change', applyFilters);
+    });
+
+    function applyFilters() {
+        const params = new URLSearchParams();
+        const s = document.getElementById('f-status').value;
+        const p = document.getElementById('f-priority').value;
+        const c = document.getElementById('f-category').value;
+        const d = document.getElementById('f-due').value;
+        const so = document.getElementById('f-sort').value;
+        if (s) params.set('status', s);
+        if (p) params.set('priority', p);
+        if (c) params.set('category', c);
+        if (d) params.set('due', d);
+        if (so) params.set('sort', so);
+
+        window.location.search = params.toString();
+    }
+
+    // Parse and render task cards
     const items = document.querySelectorAll('ul li');
     const board = document.getElementById('board');
+    const today = new Date(); today.setHours(0,0,0,0);
 
     if (items.length === 1 && !items[0].querySelector('b')) {
         const el = document.createElement('div');
         el.className = 'empty-state';
-        el.textContent = items[0].textContent.trim();
+        el.textContent = 'Žiadne úlohy zodpovedajú filtru.';
         board.appendChild(el);
     } else {
+        let count = 0;
         items.forEach(li => {
             const taskId = li.dataset.id;
-
             const segments = [];
             let current = '';
             li.childNodes.forEach(node => {
-                if (node.nodeName === 'BR') {
-                    segments.push(current.trim());
-                    current = '';
-                } else {
-                    current += node.textContent;
-                }
+                if (node.nodeName === 'BR') { segments.push(current.trim()); current = ''; }
+                else current += node.textContent;
             });
             if (current.trim()) segments.push(current.trim());
 
-            const title       = segments[0] || '';
-            const description = segments[1] || '';
-            const dueDate     = segments[2] || '';
-            const priStat     = segments[3] || '';
-            const userLine    = segments[4] || '';
+            const title    = segments[0] || '';
+            const desc     = segments[1] || '';
+            const dueDate  = segments[2] || '';
+            const priStat  = segments[3] || '';
+            const category = segments[4] || '';
+            const userLine = segments[5] || '';
 
             const [priority, status] = priStat.split('|').map(s => s.trim());
             const username = userLine.replace('vytvoril:', '').trim();
 
+            const statusLabel = {
+                'spraviť': 'Spraviť',
+                'in_progress': 'Robí sa',
+                'hotová': 'Hotová'
+
+            }[status] || status;
+            // Calculate due date badge
+            let dueBadge = '', cardClass = '';
+            if (status === 'hotová') {
+                dueBadge = '<span class="due-badge done">✓ Hotová</span>';
+                cardClass = 'done-card';
+            } else if (dueDate) {
+                const due = new Date(dueDate); due.setHours(0,0,0,0);
+                const diff = Math.floor((due - today) / 86400000);
+                if (diff < 0)       { dueBadge = '<span class="due-badge overdue">Po termíne</span>';  cardClass = 'overdue'; }
+                else if (diff === 0){ dueBadge = '<span class="due-badge due-soon">Dnes!</span>';      cardClass = 'due-soon'; }
+                else if (diff <= 3) { dueBadge = `<span class="due-badge due-soon">Za ${diff}d</span>`; cardClass = 'due-soon'; }            }
+
             const card = document.createElement('div');
-            card.className = 'task-card';
+            card.className = `task-card ${cardClass}`;
             card.innerHTML = `
+                ${dueBadge}
                 <div class="card-title">${title}</div>
-                <div class="card-subject">${description}</div>
-                <div class="card-due">Due: <span>${dueDate || '—'}</span></div>
+                <div class="card-subject">${desc}</div>
+                <div class="card-due">Termín: <span>${dueDate || '—'}</span></div>
                 <div class="card-priority">
                     <div class="dot ${priority}"></div>
                     ${priority}
                 </div>
-                <div class="card-status-title">Status</div>
-                <div class="card-status-value">${status}</div>
-                <div class="card-user">👤 ${username}</div>
+                <div class="card-meta">
+                    <span class="tag status-${status}">${statusLabel}</span>
+                    ${category ? `<span class="tag">${category}</span>` : ''}
+                </div>
+                <div class="card-user">👤 ${username || '—'}</div>
                 <div class="card-actions">
                     <a class="btn-edit" href="/tasks/${taskId}/edit/">✏ Upraviť</a>
                     <a class="btn-delete" href="/tasks/${taskId}/delete/"
@@ -303,7 +405,9 @@
                 </div>
             `;
             board.appendChild(card);
+            count++;
         });
+        document.getElementById('filterCount').textContent = `${count} úloh`;
     }
 </script>
 
