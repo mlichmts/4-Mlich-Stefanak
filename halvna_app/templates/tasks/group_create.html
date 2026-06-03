@@ -134,6 +134,19 @@
         }
     </style>
 </head>
+<script>
+    function addRow() {
+        const div = document.createElement('div');
+        div.style = 'display:flex;gap:8px;margin-bottom:8px;';
+        div.innerHTML = `
+            <input type="text" name="member_usernames" placeholder="Zadaj username..."
+                   style="flex:1;background:#282828;border:none;border-radius:8px;padding:10px;color:#fff;font-size:14px;outline:none;">
+            <button type="button" onclick="this.parentElement.remove()"
+                    style="background:#444;border:none;color:#fff;border-radius:6px;padding:0 10px;cursor:pointer;">−</button>
+        `;
+        document.getElementById('member-inputs').appendChild(div);
+    }
+    </script>
 <body>
 
     <div class="modal-card">
@@ -150,16 +163,17 @@
                 <textarea name="description" placeholder="POPIS..."></textarea>
             </div>
 
-            <div class="members-container">
-                
-                {% for user in all_users %}
-                    <label class="member-label">
-                        <input type="checkbox" name="members" value="{{ user.id }}">
-                        {{ user.username }}
-                        {% if user.first_name %} ({{ user.first_name }} {{ user.last_name }}){% endif %}
-                    </label>
-                {% endfor %}
+            {% if error %}
+                <p style="color:#e05252; font-size:13px; margin-bottom:12px;">{{ error }}</p>
+            {% endif %}
+
+            <div class="members-container" id="member-inputs">
+                <div class="member-row" style="display:flex;gap:8px;margin-bottom:8px;">
+                    <input type="text" name="member_usernames" placeholder="Zadaj username...">
+                    <button type="button" onclick="this.parentElement.remove()" style="background:#444;border:none;color:#fff;border-radius:6px;padding:0 10px;cursor:pointer;">−</button>
+                </div>
             </div>
+            <button type="button" onclick="addRow()" style="background:none;border:1px solid #555;color:#aaa;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;margin-bottom:16px;">+ Pridať ďalšieho</button>
 
             <div class="actions">
                 <button type="submit">&#43; Create</button>
