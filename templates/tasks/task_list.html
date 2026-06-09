@@ -60,7 +60,7 @@
         }
         .btn-top:hover { background: var(--accent-hover); transform: translateY(-1px); }
 
-#btn-logout {
+        #btn-logout {
             background: none;
             border: 1px solid var(--card-border);
             color: var(--text-muted);
@@ -126,6 +126,16 @@
         .btn-reset:hover { background: var(--card-border); color: var(--text-dim); }
 
         .filter-count { font-size: 12px; color: var(--text-muted); margin-left: auto; }
+
+        /* GROUP PANEL */
+        #group-panel {
+            display: none;
+            margin-bottom: 24px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 16px;
+        }
 
         /* BOARD */
         #board { display: flex; flex-wrap: wrap; gap: 20px; }
@@ -201,7 +211,7 @@
 
         .card-actions { display: flex; gap: 8px; }
 
-.btn-delete {
+        .btn-delete {
             flex: 1; text-align: center; font-size: 11px; font-weight: 500;
             color: #fff; text-decoration: none; padding: 5px 0;
             background: #a05050; border: none; border-radius: 6px;
@@ -228,7 +238,7 @@
 
 <ul>
     {% for task in tasks %}
-        <li data-id="{{ task.id }}">
+        <li data-id="{{ task.id }}" data-group="{{ task.group.name|default:'' }}">
             <b>{{ task.title }}</b><br>
             {{ task.description }}<br>
             {{ task.due_date }}<br>
@@ -248,6 +258,13 @@
     {% endfor %}
 </select>
 
+<!-- ZMENA 1: value="{{ g.id }}" namiesto g.name -->
+<select id="group-options" style="display:none">
+    {% for g in user_groups %}
+        <option value="{{ g.id }}">{{ g.name }}</option>
+    {% endfor %}
+</select>
+
 <form method="post" action="/logout/">
     {% csrf_token %}
     <button type="submit">Logout</button>
@@ -259,11 +276,18 @@
     <div class="right">
         <a class="btn-top" href="/tasks/create/">+ Add Task</a>
         <a class="btn-top" href="{% url 'group_create' %}">+ Nová skupina</a>
+        <a class="btn-top" href="#" id="btn-groups" style="background:#3a3a3a;color:var(--text-dim);" onclick="toggleGroupPanel();return false;">Skupiny</a>
         <form method="post" action="/logout/" style="display:inline">
             {% csrf_token %}
             <button type="submit" id="btn-logout">Logout</button>
         </form>
     </div>
+</div>
+
+<!-- GROUP PANEL -->
+<div id="group-panel">
+    <div style="font-size:13px; font-weight:600; color:var(--text-dim); margin-bottom:12px;">Moje skupiny</div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;" id="group-list-panel"></div>
 </div>
 
 <!-- FILTER BAR -->
@@ -306,117 +330,181 @@
 <div id="board"></div>
 
 <script>
-    document.getElementById('pageTitle').textContent =
-        document.querySelector('h1').textContent;
 
-    const catSrc = document.getElementById('cat-options');
-    const catDst = document.getElementById('f-category');
-    catSrc.querySelectorAll('option').forEach(o => catDst.appendChild(o.cloneNode(true)));
-
-    const dd = document.getElementById('django-data').dataset;
-    document.getElementById('f-status').value   = dd.status;
-    document.getElementById('f-priority').value = dd.priority;
-    document.getElementById('f-category').value = dd.category;
-    document.getElementById('f-due').value      = dd.due;
-    document.getElementById('f-sort').value     = dd.sort || '';
-
-    ['f-status','f-priority','f-category','f-due','f-sort'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el.value) el.classList.add('active');
-        el.addEventListener('change', applyFilters);
+    // ZMENA 2: chip.href používa o.value čo je teraz ID skupiny
+const groupOpts = document.getElementById('group-options');
+const groupPanel = document.getElementById('group-list-panel');
+if (groupOpts) {
+    groupPanel.innerHTML = ''; // Vyčistíme panel pred naplnením
+    groupOpts.querySelectorAll('option').forEach(o => {
+        if (!o.value) return;
+        const chip = document.createElement('a');
+        chip.href = `/groups/${o.value}/edit/`;
+        chip.style = 'background:#333;border:1px solid #444;border-radius:8px;padding:6px 14px;font-size:12px;color:#aaa;text-decoration:none;';
+        chip.textContent = `✏ ${o.textContent}`;
+        groupPanel.appendChild(chip);
     });
+}
 
-    function applyFilters() {
-        const params = new URLSearchParams();
-        const s  = document.getElementById('f-status').value;
-        const p  = document.getElementById('f-priority').value;
-        const c  = document.getElementById('f-category').value;
-        const d  = document.getElementById('f-due').value;
-        const so = document.getElementById('f-sort').value;
-        if (s)  params.set('status', s);
-        if (p)  params.set('priority', p);
-        if (c)  params.set('category', c);
-        if (d)  params.set('due', d);
-        if (so) params.set('sort', so);
-        window.location.search = params.toString();
-    }
-
-    const items = document.querySelectorAll('ul li');
-    const board = document.getElementById('board');
-    const today = new Date(); today.setHours(0,0,0,0);
-
-    if (items.length === 1 && !items[0].querySelector('b')) {
-        const el = document.createElement('div');
-        el.className = 'empty-state';
-        el.textContent = 'Žiadne úlohy zodpovedajú filtru.';
-        board.appendChild(el);
+// Opravená funkcia prepínania - explicitne kontroluje štýl
+function toggleGroupPanel() {
+    const p = document.getElementById('group-panel');
+    if (p.style.display === 'none' || p.style.display === '') {
+        p.style.display = 'block';
     } else {
-        let count = 0;
-        items.forEach(li => {
-            const taskId = li.dataset.id;
-            const segments = [];
-            let current = '';
-            li.childNodes.forEach(node => {
-                if (node.nodeName === 'BR') { segments.push(current.trim()); current = ''; }
-                else current += node.textContent;
-            });
-            if (current.trim()) segments.push(current.trim());
-
-            const title    = segments[0] || '';
-            const desc     = segments[1] || '';
-            const dueDate  = segments[2] || '';
-            const priStat  = segments[3] || '';
-            const category = segments[4] || '';
-            const userLine = segments[5] || '';
-
-            const [priority, status] = priStat.split('|').map(s => s.trim());
-            const username = userLine.replace('vytvoril:', '').trim();
-
-            const statusLabel = {
-                'spraviť': 'Spraviť',
-                'in_progress': 'Robí sa',
-                'hotová': 'Hotová'
-            }[status] || status;
-
-            let dueBadge = '', cardClass = '';
-            if (status === 'hotová') {
-                dueBadge = '<span class="due-badge done">✓ Hotová</span>';
-                cardClass = 'done-card';
-            } else if (dueDate) {
-                const due = new Date(dueDate); due.setHours(0,0,0,0);
-                const diff = Math.floor((due - today) / 86400000);
-                if (diff < 0)       { dueBadge = '<span class="due-badge overdue">Po termíne</span>';    cardClass = 'overdue'; }
-                else if (diff === 0){ dueBadge = '<span class="due-badge due-soon">Dnes</span>';          cardClass = 'due-soon'; }
-                else if (diff <= 3) { dueBadge = `<span class="due-badge due-soon">Za ${diff}d</span>`;  cardClass = 'due-soon'; }
-            }
-
-            const card = document.createElement('div');
-            card.className = `task-card ${cardClass}`;
-            card.innerHTML = `
-                ${dueBadge}
-                <div class="card-title">${title}</div>
-                <div class="card-subject">${desc}</div>
-                <div class="card-due">Termín: <span>${dueDate || '—'}</span></div>
-                <div class="card-priority">
-                    <div class="dot ${priority}"></div>
-                    ${priority}
-                </div>
-                <div class="card-meta">
-                    <span class="tag">${statusLabel}</span>
-                    ${category ? `<span class="tag">${category}</span>` : ''}
-                </div>
-                <div class="card-user">${username || '—'}</div>
-                <div class="card-actions">
-                    <a class="btn-delete" href="/tasks/${taskId}/delete/"
-                       onclick="event.stopPropagation(); return confirm('Zmazať úlohu?')">Zmazať</a>
-                </div>
-            `;
-            card.addEventListener('click', () => { window.location.href = `/tasks/${taskId}/edit/`; });
-            board.appendChild(card);
-            count++;
-        });
-        document.getElementById('filterCount').textContent = `${count} úloh`;
+        p.style.display = 'none';
     }
+}
+
+document.getElementById('pageTitle').textContent =
+    document.querySelector('h1').textContent;
+
+const catSrc = document.getElementById('cat-options');
+const catDst = document.getElementById('f-category');
+catSrc.querySelectorAll('option').forEach(o => catDst.appendChild(o.cloneNode(true)));
+
+const dd = document.getElementById('django-data').dataset;
+document.getElementById('f-status').value   = dd.status || '';
+document.getElementById('f-priority').value = dd.priority || '';
+document.getElementById('f-category').value = dd.category || '';
+document.getElementById('f-due').value      = dd.due || '';
+document.getElementById('f-sort').value     = dd.sort || '';
+
+['f-status','f-priority','f-category','f-due','f-sort'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el.value) el.classList.add('active');
+    el.addEventListener('change', applyFilters);
+});
+
+function applyFilters() {
+    const params = new URLSearchParams();
+    const s  = document.getElementById('f-status').value;
+    const p  = document.getElementById('f-priority').value;
+    const c  = document.getElementById('f-category').value;
+    const d  = document.getElementById('f-due').value;
+    const so = document.getElementById('f-sort').value;
+    if (s)  params.set('status', s);
+    if (p)  params.set('priority', p);
+    if (c)  params.set('category', c);
+    if (d)  params.set('due', d);
+    if (so) params.set('sort', so);
+    window.location.search = params.toString();
+}
+
+const items = document.querySelectorAll('ul li');
+const board = document.getElementById('board');
+const today = new Date(); today.setHours(0,0,0,0);
+
+// Vyčistíme board pred generovaním, aby sme predišli duplicitám
+board.innerHTML = '';
+
+if (items.length === 1 && items[0].textContent.trim() === 'Žiadne úlohy') {
+    const el = document.createElement('div');
+    el.className = 'empty-state';
+    el.textContent = 'Žiadne úlohy zodpovedajú filtru.';
+    board.appendChild(el);
+} else {
+    let count = 0;
+    items.forEach(li => {
+        const taskId = li.dataset.id;
+        if (!taskId) return; // Preskočiť prípadný empty-state element z Django templatu
+
+        const segments = [];
+        let current = '';
+        li.childNodes.forEach(node => {
+            if (node.nodeName === 'BR') { segments.push(current.trim()); current = ''; }
+            else current += node.textContent;
+        });
+        if (current.trim()) segments.push(current.trim());
+
+        const title    = segments[0] || '';
+        const desc     = segments[1] || '';
+        const dueDate  = segments[2] || '';
+        const priStat  = segments[3] || '';
+        const category = segments[4] || '';
+        const userLine = segments[5] || '';
+
+        const [priority, status] = priStat.split('|').map(s => s.trim());
+        const username = userLine.replace('vytvoril:', '').trim();
+
+        const statusLabel = {
+            'spraviť': 'Spraviť',
+            'Robí sa': 'Robí sa',
+            'hotová': 'Hotová'
+        }[status] || status;
+
+        let dueBadge = '', cardClass = '';
+        if (status === 'hotová') {
+            dueBadge = '<span class="due-badge done">✓ Hotová</span>';
+            cardClass = 'done-card';
+        } else if (dueDate) {
+            const due = new Date(dueDate); due.setHours(0,0,0,0);
+            const diff = Math.floor((due - today) / 86400000);
+            if (diff < 0)       { dueBadge = '<span class="due-badge overdue">Po termíne</span>';    cardClass = 'overdue'; }
+            else if (diff === 0){ dueBadge = '<span class="due-badge due-soon">Dnes</span>';          cardClass = 'due-soon'; }
+            else if (diff <= 3) { dueBadge = `<span class="due-badge due-soon">Za ${diff}d</span>`;  cardClass = 'due-soon'; }
+        }
+
+        const card = document.createElement('div');
+        card.className = `task-card ${cardClass}`;
+        card.innerHTML = `
+            ${dueBadge}
+            <div class="card-title">${title}</div>
+            <div class="card-subject">${desc}</div>
+            <div class="card-due">Termín: <span>${dueDate || '—'}</span></div>
+            <div class="card-priority">
+                <div class="dot ${priority}"></div>
+                ${priority}
+            </div>
+            <div class="card-meta">
+                <span class="tag">${statusLabel}</span>
+                ${category ? `<span class="tag">${category}</span>` : ''}
+            </div>
+            <div class="card-user">${username || '—'}</div>
+            <div class="card-actions">
+                <a class="btn-delete" href="/tasks/${taskId}/delete/"
+                   onclick="event.stopPropagation(); return confirm('Zmazať úlohu?')">Zmazať</a>
+            </div>
+        `;
+        card.addEventListener('click', () => { window.location.href = `/tasks/${taskId}/edit/`; });
+
+        // ZMENA 3: Fix pre bezpečné zakladanie sekcií
+        const groupName = li.dataset.group;
+
+        if (groupName) {
+            let section = document.getElementById(`section-${groupName}`);
+            if (!section) {
+                const header = document.createElement('div');
+                header.style = 'width:100%; margin-top:24px; margin-bottom:8px;';
+                header.innerHTML = `<span style="font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;">👥 ${groupName}</span><hr style="border-color:var(--card-border);margin-top:6px;">`;
+                board.appendChild(header);
+                
+                section = document.createElement('div');
+                section.id = `section-${groupName}`;
+                section.style = 'display:flex; flex-wrap:wrap; gap:20px; width:100%; margin-bottom:16px;';
+                board.appendChild(section);
+            }
+            section.appendChild(card);
+        } else {
+            let sectionPersonal = document.getElementById('section-personal');
+            if (!sectionPersonal) {
+                const header = document.createElement('div');
+                header.style = 'width:100%; margin-bottom:8px;';
+                header.innerHTML = `<span style="font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;">👤 Osobné úlohy</span><hr style="border-color:var(--card-border);margin-top:6px;">`;
+                board.appendChild(header);
+                
+                sectionPersonal = document.createElement('div');
+                sectionPersonal.id = 'section-personal';
+                sectionPersonal.style = 'display:flex; flex-wrap:wrap; gap:20px; width:100%; margin-bottom:16px;';
+                board.appendChild(sectionPersonal);
+            }
+            sectionPersonal.appendChild(card);
+        }
+
+        count++;
+    });
+    document.getElementById('filterCount').textContent = `${count} úloh`;
+}
 </script>
 
 </body>

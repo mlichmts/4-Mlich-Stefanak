@@ -3,7 +3,76 @@ from django.shortcuts import render, redirect
 from django.db.models import Q
 from django.contrib.auth.models import User
 from .models import Task, Category, Group, GroupMembership
+from django.shortcuts import render, redirect, get_object_or_404
+from django.core.exceptions import PermissionDenied
+from django.contrib.auth.models import User
 
+
+from django.utils import timezone
+import datetime
+@login_required
+def group_edit(request, group_id):
+    group = get_object_or_404(Group, id=group_id)
+    memberships = GroupMembership.objects.filter(group=group)
+
+    # 1. KONTROLA: Zistíme, kto je zakladateľom/vlastníkom skupiny
+    # Hľadáme záznam, kde je rola nastavená na 'admin' (alebo 'owner'/'creator' podľa tvojho uváženia)
+    owner_membership = memberships.filter(role='admin').first()
+    group_owner = owner_membership.user if owner_membership else None
+
+    # OCHRANA: Ak sa niekto pokúša upraviť skupinu, ktorú nevytvoril
+    # (Dovolíme to iba vlastníkovi skupiny alebo superuserovi/adminovi systému)
+    if group_owner and request.user != group_owner and not request.user.is_superuser:
+        raise PermissionDenied("Môžeš upravovať iba skupiny, ktoré si sám vytvoril.")
+
+    if request.method == 'POST':
+        group.name = request.POST.get('name')
+        group.description = request.POST.get('description')
+        group.save()
+
+        # OCHRANA: Zmaž všetkých členov, ale EXCLUDE (vynechaj) pôvodného zakladateľa skupiny!
+        # Týmto zabezpečíš, že zakladateľ zostane v skupine navždy, aj keby ho niekto vynechal vo formulári
+        if group_owner:
+            GroupMembership.objects.filter(group=group).exclude(user=group_owner).delete()
+        else:
+            # Záložný plán, ak by skupina nemala admina (napr. staré dáta) - vymaže všetkých okrem odosielateľa
+            GroupMembership.objects.filter(group=group).exclude(user=request.user).delete()
+
+        # Pridaj nových členov z formulára
+        usernames = request.POST.getlist('member_usernames')
+        not_found = []
+        for username in usernames:
+            username = username.strip()
+            if not username:
+                continue
+            try:
+                user = User.objects.get(username=username)
+                
+                # Pridávame nového člena iba vtedy, ak to nie je samotný vlastník skupiny
+                # (keďže toho sme hore nevymazali a nechceme duplicitné záznamy)
+                if user != group_owner:    
+                    GroupMembership.objects.get_or_create(
+                        user=user, 
+                        group=group, 
+                        defaults={'role': 'member'}
+                    )
+            except User.DoesNotExist:
+                not_found.append(username)
+
+        if not_found:
+            # Po chybe musíme znova vytiahnuť aktuálne memberships pre šablónu
+            return render(request, 'tasks/group_edit.html', {
+                'group': group,
+                'memberships': GroupMembership.objects.filter(group=group),
+                'error': f'Nenájdení: {", ".join(not_found)}'
+            })
+
+        return redirect('task_list')
+
+    return render(request, 'tasks/group_edit.html', {
+                'group': group,
+                'memberships': memberships,
+    })
 
 @login_required
 def task_list(request):
@@ -34,18 +103,26 @@ def task_list(request):
     if category:
         tasks = tasks.filter(category_id=category)
     if due == 'today':
-        from django.utils import timezone
         tasks = tasks.filter(due_date=timezone.now().date())
     elif due == 'week':
-        from django.utils import timezone
-        import datetime
         today = timezone.now().date()
         tasks = tasks.filter(due_date__range=[today, today + datetime.timedelta(days=7)])
     elif due == 'overdue':
-        from django.utils import timezone
-        tasks = tasks.filter(due_date__lt=timezone.now().date(), status__ne='hotová') if False else tasks.filter(due_date__lt=timezone.now().date()).exclude(status='hotová')
+        tasks = tasks.filter(due_date__lt=timezone.now().date()).exclude(status='hotová')
 
     categories = Category.objects.all()
+
+    # --- ÚPRAVA PRE SKUPINY ---
+    if request.user.is_superuser:
+        # Superuser (Hlavný admin stránky) uvidí a môže upravovať úplne všetky skupiny
+        user_groups_to_edit = Group.objects.all()
+    else:
+        # Bežný používateľ uvidí IBA tie skupiny, kde je v prepojovacej tabuľke označený ako 'admin'
+        user_groups_to_edit = Group.objects.filter(
+            groupmembership__user=request.user,
+            groupmembership__role='admin'
+        )
+    # ---------------------------
 
     return render(request, 'tasks/task_list.html', {
         'tasks': tasks,
@@ -54,7 +131,9 @@ def task_list(request):
         'current_priority': priority or '',
         'current_category': category or '',
         'current_due': due or '',
-         'current_sort': sort,
+        'current_sort': sort,
+        # Sem dosadíme náš nový očistený zoznam skupín
+        'user_groups': user_groups_to_edit, 
     })
 
 
