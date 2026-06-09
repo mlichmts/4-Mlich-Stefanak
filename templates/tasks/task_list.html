@@ -244,6 +244,7 @@
             {{ task.due_date }}<br>
             {{ task.priority }} | {{ task.status }}<br>
             {{ task.category.name|default:"" }}<br>
+            {{ task.category.color|default:"" }}<br>
             vytvoril: {{ task.user.username|default:"" }}
         </li>
     {% empty %}
@@ -421,8 +422,9 @@ if (items.length === 1 && items[0].textContent.trim() === 'Žiadne úlohy') {
         const desc     = segments[1] || '';
         const dueDate  = segments[2] || '';
         const priStat  = segments[3] || '';
-        const category = segments[4] || '';
-        const userLine = segments[5] || '';
+        const category      = segments[4] || '';
+        const categoryColor = segments[5] || '';
+        const userLine      = segments[6] || '';
 
         const [priority, status] = priStat.split('|').map(s => s.trim());
         const username = userLine.replace('vytvoril:', '').trim();
@@ -447,6 +449,7 @@ if (items.length === 1 && items[0].textContent.trim() === 'Žiadne úlohy') {
 
         const card = document.createElement('div');
         card.className = `task-card ${cardClass}`;
+        if (categoryColor) card.style.borderLeft = `3px solid ${categoryColor}`;
         card.innerHTML = `
             ${dueBadge}
             <div class="card-title">${title}</div>
