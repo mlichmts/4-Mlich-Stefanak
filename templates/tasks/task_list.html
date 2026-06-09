@@ -275,11 +275,18 @@
 <div id="topbar">
     <div style="display:flex; align-items:center; gap:12px;">
         <span class="page-title" id="pageTitle"></span>
-        <span style="font-size:13px; color:var(--text-muted);">{{ request.user.get_full_name|default:request.user.username }}</span>
     </div>
-    <span style="font-size:13px; color:var(--text-muted); margin-left:12px;">
-         {{ request.user.get_full_name|default:request.user.username }}
-    </span>
+    <span style="
+        font-size:11px;
+        font-weight:600;
+        color:var(--text-muted);
+        background:#2a2a2a;
+        border:1px solid #3a3a3a;
+        border-radius:99px;
+        padding:3px 10px;
+        letter-spacing:0.04em;
+        text-transform:uppercase;
+    ">{{ request.user.get_full_name|default:request.user.username }}</span>
     <div class="right">
         <a class="btn-top" href="/tasks/create/">+ Add Task</a>
         <a class="btn-top" href="{% url 'group_create' %}">+ Nová skupina</a>
