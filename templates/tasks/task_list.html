@@ -273,7 +273,10 @@
 
 <!-- VISUAL SHELL -->
 <div id="topbar">
-    <span class="page-title" id="pageTitle"></span>
+    <div style="display:flex; align-items:center; gap:12px;">
+        <span class="page-title" id="pageTitle"></span>
+        <span style="font-size:13px; color:var(--text-muted);">{{ request.user.get_full_name|default:request.user.username }}</span>
+    </div>
     <span style="font-size:13px; color:var(--text-muted); margin-left:12px;">
          {{ request.user.get_full_name|default:request.user.username }}
     </span>
