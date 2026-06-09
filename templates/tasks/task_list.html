@@ -274,6 +274,9 @@
 <!-- VISUAL SHELL -->
 <div id="topbar">
     <span class="page-title" id="pageTitle"></span>
+    <span style="font-size:13px; color:var(--text-muted); margin-left:12px;">
+         {{ request.user.get_full_name|default:request.user.username }}
+    </span>
     <div class="right">
         <a class="btn-top" href="/tasks/create/">+ Add Task</a>
         <a class="btn-top" href="{% url 'group_create' %}">+ Nová skupina</a>
